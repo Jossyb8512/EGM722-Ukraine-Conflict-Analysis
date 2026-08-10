@@ -1,0 +1,15 @@
+name: ukraine-analysis
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.11
+  - geopandas
+  - pandas
+  - shapely
+  - matplotlib
+  - cartopy
+  - folium
+  - requests
