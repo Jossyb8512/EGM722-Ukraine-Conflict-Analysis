@@ -276,6 +276,35 @@ summary_table.to_csv(
     index=False
 )
 
+# Count conflict events by event type
+event_type_counts = analysis_gdf["event_type"].value_counts()
+print(event_type_counts)
+
+# Plot conflict events by event type
+event_type_plot = event_type_counts.sort_values()
+fig, ax = plt.subplots(figsize=(9, 5))
+
+ax.barh(
+    event_type_plot.index,
+    event_type_plot.values
+)
+
+ax.set_title("Conflict Events by Event Type, 12–18 July 2025")
+ax.set_xlabel("Event count")
+ax.set_ylabel("Event type")
+
+for i, value in enumerate(event_type_plot.values):
+    ax.text(value + 10, i, str(value), va="center")
+
+ax.set_xlim(0, event_type_plot.max() * 1.1)
+plt.tight_layout()
+plt.savefig(
+    "outputs/event_types_12_18_july_2025.png",
+    dpi=300,
+    bbox_inches="tight"
+)
+plt.show()
+
 # Plot ACLED event points over Ukraine administrative boundaries
 # ax = oblasts.plot(facecolor="none", edgecolor="black")
 # events_gdf.plot(ax=ax, color="red", markersize=30)
