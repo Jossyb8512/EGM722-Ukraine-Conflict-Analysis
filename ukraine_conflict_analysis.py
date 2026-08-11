@@ -1,5 +1,6 @@
 # Import required Python modules
 import geopandas as gpd
+import pandas as pd
 import requests
 from getpass import getpass
 import matplotlib.pyplot as plt
@@ -59,6 +60,52 @@ api_data = response.json()
 records = api_data["data"]
 print(len(records))
 
+# Convert the ACLED event records into a Pandas DataFrame
+events_df = pd.DataFrame(records)
+
+# Inspect the available ACLED event attributes
+print(events_df.columns)
+
+# Inspect key attributes required for the spatial analysis
+print(events_df[["event_date", "event_type", "sub_event_type", "admin1", "latitude", "longitude"]].head())
+
+# Check data types before spatial processing
+print(events_df[["event_date", "latitude", "longitude"]].dtypes)
+
+# Convert event dates to a datetime data type
+events_df["event_date"] = pd.to_datetime(events_df["event_date"])
+print(events_df["event_date"].dtype)
+
+# Convert coordinates to numeric values
+events_df["latitude"] = pd.to_numeric(
+    events_df["latitude"],
+    errors="coerce"
+)
+events_df["longitude"] = pd.to_numeric(
+    events_df["longitude"],
+    errors="coerce"
+)
+print(events_df[["latitude", "longitude"]].dtypes)
+
+# Check for missing coordinate values
+print(events_df[["latitude", "longitude"]].isna().sum())
+
+# Convert ACLED coordinates into spatial point features
+geometry = gpd.points_from_xy(
+    events_df["longitude"],
+    events_df["latitude"]
+)
+
+events_gdf = gpd.GeoDataFrame(
+    events_df,
+    geometry=geometry,
+    crs="EPSG:4326"
+)
+
+# Check the event GeoDataFrame
+print(events_gdf.crs)
+print(events_gdf[["longitude", "latitude", "geometry"]].head())
+
 # Load Ukraine ADM1 administrative boundaries
 oblasts = gpd.read_file('data/boundaries/geoBoundaries-UKR-ADM1-all/geoBoundaries-UKR-ADM1.geojson')
 print(oblasts.head())
@@ -66,5 +113,8 @@ print(oblasts.columns)
 print(oblasts.crs)
 print(f"Number of administrative regions: {len(oblasts)}")
 print(oblasts['shapeName'].tolist())
-oblasts.plot()
+
+# Plot ACLED event points over Ukraine administrative boundaries
+ax = oblasts.plot(facecolor="none", edgecolor="black")
+events_gdf.plot(ax=ax, color="red", markersize=30)
 plt.show()
