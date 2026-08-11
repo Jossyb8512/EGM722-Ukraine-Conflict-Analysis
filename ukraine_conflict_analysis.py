@@ -132,6 +132,72 @@ print(oblasts.crs)
 print(f"Number of administrative regions: {len(oblasts)}")
 print(oblasts['shapeName'].tolist())
 
+# Reproject oblast boundaries
+oblasts_area = oblasts.to_crs(epsg=10596)
+
+# Check the projected coordinate reference system
+print(oblasts_area.crs)
+
+# Calculate oblast area in square kilometres
+oblasts_area["area_km2"] = oblasts_area.geometry.area / 1_000_000
+
+# Check oblast area in square kilometres
+print(oblasts_area[["shapeName", "area_km2"]].head())
+
+# Assign ACLED event points to Ukraine oblast polygons
+events_joined = gpd.sjoin(
+    analysis_gdf,
+    oblasts[["shapeName", "geometry"]],
+    how="left",
+    predicate="within"
+)
+
+# Check join
+print(events_joined.shape)
+print(events_joined[["shapeName"]].head())
+
+# Check for events not assigned to an oblast
+print(events_joined["shapeName"].isna().sum())
+
+# Count ACLED events by oblast
+counts = events_joined.groupby("shapeName").size()
+
+# Convert event counts into a DataFrame
+event_counts = counts.reset_index(name="event_count")
+
+print(event_counts.sort_values("event_count", ascending=False).head())
+
+# Combine oblast areas with reported event counts
+oblast_summary = oblasts_area.merge(
+    event_counts,
+    on="shapeName",
+    how="left"
+)
+
+# Check merge
+print(oblast_summary.shape)
+print(oblast_summary[["shapeName", "area_km2", "event_count"]].head())
+
+# Check for no events
+print(oblast_summary["event_count"].isna().sum())
+
+# Replace missing event counts with zero
+oblast_summary["event_count"] = oblast_summary["event_count"].fillna(0).astype(int)
+
+# Check replaced with zero
+print(oblast_summary["event_count"].isna().sum())
+
+# Calculate reported events per 1,000 square kilometres
+oblast_summary["events_per_1000km2"] = (
+    oblast_summary["event_count"] / oblast_summary["area_km2"]
+) * 1000
+
+print(
+    oblast_summary[
+        ["shapeName", "event_count", "area_km2", "events_per_1000km2"]
+    ].sort_values("events_per_1000km2", ascending=False).head()
+)
+
 # Plot ACLED event points over Ukraine administrative boundaries
 ax = oblasts.plot(facecolor="none", edgecolor="black")
 events_gdf.plot(ax=ax, color="red", markersize=30)
