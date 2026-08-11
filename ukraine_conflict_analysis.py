@@ -41,9 +41,10 @@ acled_url = "https://acleddata.com/api/acled/read"
 # Define filters for the Ukraine conflict event request
 params = {
     "country": "Ukraine",
-    "event_date": "2025-07-01|2025-07-31",
+    "event_date": "2025-07-12|2025-07-18",
     "event_date_where": "BETWEEN",
-    "limit": 5
+    "limit": 5000,
+    "with_total": "true"
 }
 
 # Request filtered conflict event data from ACLED
@@ -57,6 +58,7 @@ print(f"Event request status: {response.status_code}")
 
 # Extract the returned ACLED conflict event records
 api_data = response.json()
+print(f"Total events for study week: {api_data['total_count']}")
 records = api_data["data"]
 print(len(records))
 
