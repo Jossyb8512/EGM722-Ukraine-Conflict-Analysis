@@ -108,6 +108,22 @@ events_gdf = gpd.GeoDataFrame(
 print(events_gdf.crs)
 print(events_gdf[["longitude", "latitude", "geometry"]].head())
 
+# Select ACLED attributes required for the analysis
+analysis_gdf = events_gdf[[
+    "event_id_cnty",
+    "event_date",
+    "event_type",
+    "sub_event_type",
+    "admin1",
+    "location",
+    "latitude",
+    "longitude",
+    "fatalities",
+    "geometry"
+]].copy()
+print(analysis_gdf.crs)
+print(analysis_gdf.shape)
+
 # Load Ukraine ADM1 administrative boundaries
 oblasts = gpd.read_file('data/boundaries/geoBoundaries-UKR-ADM1-all/geoBoundaries-UKR-ADM1.geojson')
 print(oblasts.head())
