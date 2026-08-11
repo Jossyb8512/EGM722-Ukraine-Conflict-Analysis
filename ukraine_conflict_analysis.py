@@ -163,7 +163,7 @@ print(events_joined["shapeName"].isna().sum())
 counts = events_joined.groupby("shapeName").size()
 
 # Convert event counts into a DataFrame
-event_counts = counts.reset_index(name="event_count")
+event_counts: pd.DataFrame = counts.to_frame(name="event_count").reset_index()
 
 print(event_counts.sort_values("event_count", ascending=False).head())
 
@@ -198,7 +198,30 @@ print(
     ].sort_values("events_per_1000km2", ascending=False).head()
 )
 
-# Plot ACLED event points over Ukraine administrative boundaries
-ax = oblasts.plot(facecolor="none", edgecolor="black")
-events_gdf.plot(ax=ax, color="red", markersize=30)
+# Map reported event density
+ax = oblast_summary.plot(
+    column="events_per_1000km2",
+    cmap="RdYlGn_r",
+    legend=True,
+    edgecolor="black",
+    linewidth=0.5,
+    figsize=(10, 8),
+    legend_kwds={"label": "Events per 1,000 km²"}
+)
+
+ax.set_title("Conflict Event Density in Ukraine, 12–18 July 2025")
+ax.set_axis_off()
+
+plt.savefig(
+    "outputs/ukraine_event_density_12_18_july_2025.png",
+    dpi=300,
+    bbox_inches="tight"
+)
+
+plt.tight_layout()
 plt.show()
+
+# Plot ACLED event points over Ukraine administrative boundaries
+# ax = oblasts.plot(facecolor="none", edgecolor="black")
+# events_gdf.plot(ax=ax, color="red", markersize=30)
+# plt.show()
