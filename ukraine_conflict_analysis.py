@@ -237,45 +237,45 @@ print(f"Event request status: {response.status_code}")
 # Extract the returned ACLED conflict event records
 api_data = response.json()
 print(f"Total events for study week: {api_data['total_count']}")
-records = api_data["data"]
-if not records:
+event_records = api_data["data"]
+if not event_records:
     raise ValueError("No ACLED events were returned for the selected study period.")
 
 # Prepare ACLED event records for spatial analysis
-analysis_gdf = prepare_event_data(records)
+prepared_events = prepare_event_data(event_records)
 
 # Load Ukraine Oblast boundaries
 oblasts = load_boundaries('data/boundaries/geoBoundaries-UKR-ADM1-all/geoBoundaries-UKR-ADM1.geojson')
 print(f"Number of oblast areas: {len(oblasts)}")
 
 # Calculate oblast areas
-oblasts_area = calculate_oblast_areas(oblasts)
+projected_oblasts = calculate_oblast_areas(oblasts)
 
 # Assign ACLED event points to Ukraine oblast polygons
-events_joined = assign_events_to_oblasts(
-    analysis_gdf,
+joined_events = assign_events_to_oblasts(
+    prepared_events,
     oblasts
 )
 
 # Check that all events were assigned to an oblast area
-if events_joined["shapeName"].isna().any():
+if joined_events["shapeName"].isna().any():
     raise ValueError("One or more ACLED events could not be assigned to an oblast area.")
 
 # Calculate event counts and density by oblast area
-oblast_summary = calculate_event_density(
-    events_joined,
-    oblasts_area
+density_summary = calculate_event_density(
+    joined_events,
+    projected_oblasts
 )
 
 # Display oblast areas with the highest event density
 print(
-    oblast_summary[
+    density_summary[
         ["shapeName", "event_count", "area_km2", "events_per_1000km2"]
     ].sort_values("events_per_1000km2", ascending=False).head()
 )
 
 # Map event density
-ax = oblast_summary.plot(
+ax = density_summary.plot(
     column="events_per_1000km2",
     cmap="RdYlGn_r",
     legend=True,
@@ -296,7 +296,7 @@ plt.show()
 
 # Identify the ten oblast areas with the highest event counts
 top_10_events = (
-    oblast_summary[["shapeName", "event_count"]]
+    density_summary[["shapeName", "event_count"]]
     .sort_values("event_count", ascending=False)
     .head(10)
 )
@@ -322,7 +322,7 @@ plt.savefig(
 plt.show()
 
 # Create a summary table of event counts and density by oblast area
-summary_table = oblast_summary[[
+summary_table = density_summary[[
     "shapeName",
     "event_count",
     "area_km2",
@@ -342,7 +342,7 @@ summary_table.to_csv(
 )
 
 # Count conflict events by event type
-event_type_counts = analysis_gdf["event_type"].value_counts()
+event_type_counts = prepared_events["event_type"].value_counts()
 
 # Plot conflict events by event type
 event_type_plot = event_type_counts.sort_values()
