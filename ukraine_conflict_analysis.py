@@ -138,6 +138,44 @@ def assign_events_to_oblasts(events, boundaries):
 
     return events_joined
 
+def calculate_event_density(events_joined, oblast_areas):
+    """
+    Calculate conflict event counts and density by oblast area.
+
+    Parameters
+    ----------
+    events_joined : GeoDataFrame
+        Conflict events assigned to oblast areas.
+    oblast_areas : GeoDataFrame
+        Oblast boundary data containing area values.
+
+    Returns
+    -------
+    GeoDataFrame
+        Oblast areas containing event counts and event density.
+    """
+
+    # Count ACLED events by oblast area
+    counts = events_joined.groupby("shapeName").size()
+
+    # Convert event counts into a DataFrame
+    event_counts = counts.to_frame(name="event_count").reset_index()
+
+    # Combine oblast areas with event counts
+    oblast_summary = oblast_areas.merge(
+        event_counts,
+        on="shapeName",
+        how="left"
+    )
+
+    # Replace missing event counts with zero
+    oblast_summary["event_count"] = oblast_summary["event_count"].fillna(0).astype(int)
+
+    # Calculate events per 1,000 square kilometres
+    oblast_summary["events_per_1000km2"] = (oblast_summary["event_count"] / oblast_summary["area_km2"]) * 1000
+
+    return oblast_summary
+
 # Request ACLED credentials at runtime
 acled_email = input("ACLED email: ")
 acled_password = getpass("ACLED password: ")
@@ -195,6 +233,7 @@ print(f"Total events for study week: {api_data['total_count']}")
 records = api_data["data"]
 print(len(records))
 
+# Prepare ACLED event records for spatial analysis
 analysis_gdf = prepare_event_data(records)
 
 # Check ACLED returns
@@ -232,19 +271,10 @@ print(events_joined[["shapeName"]].head())
 # Check for events not assigned to an oblast
 print(events_joined["shapeName"].isna().sum())
 
-# Count ACLED events by oblast
-counts = events_joined.groupby("shapeName").size()
-
-# Convert event counts into a DataFrame
-event_counts: pd.DataFrame = counts.to_frame(name="event_count").reset_index()
-
-print(event_counts.sort_values("event_count", ascending=False).head())
-
-# Combine oblast areas with reported event counts
-oblast_summary = oblasts_area.merge(
-    event_counts,
-    on="shapeName",
-    how="left"
+# Calculate event counts and density by oblast area
+oblast_summary = calculate_event_density(
+    events_joined,
+    oblasts_area
 )
 
 # Check merge
@@ -295,10 +325,11 @@ plt.tight_layout()
 plt.show()
 
 # Identify the ten oblast areas with the highest event counts
-top_10_events = event_counts.sort_values(
-    "event_count",
-    ascending=False
-).head(10)
+top_10_events = (
+    oblast_summary[["shapeName", "event_count"]]
+    .sort_values("event_count", ascending=False)
+    .head(10)
+)
 
 # Check top 10
 print(top_10_events)
