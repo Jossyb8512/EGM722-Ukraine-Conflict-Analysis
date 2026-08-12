@@ -5,6 +5,25 @@ import requests
 from getpass import getpass
 import matplotlib.pyplot as plt
 
+def load_boundaries(file_path):
+    """
+    Load the oblast boundaries dataset.
+
+    Parameters
+    ----------
+    file_path : str
+        Path to the oblast boundary dataset.
+
+    Returns
+    -------
+    GeoDataFrame
+        Loaded spatial dataset.
+    """
+
+    data = gpd.read_file(file_path)
+
+    return data
+
 # Request ACLED credentials at runtime
 acled_email = input("ACLED email: ")
 acled_password = getpass("ACLED password: ")
@@ -124,12 +143,12 @@ analysis_gdf = events_gdf[[
 print(analysis_gdf.crs)
 print(analysis_gdf.shape)
 
-# Load Ukraine ADM1 administrative boundaries
-oblasts = gpd.read_file('data/boundaries/geoBoundaries-UKR-ADM1-all/geoBoundaries-UKR-ADM1.geojson')
+# Load Ukraine Oblast boundaries
+oblasts = load_boundaries('data/boundaries/geoBoundaries-UKR-ADM1-all/geoBoundaries-UKR-ADM1.geojson')
 print(oblasts.head())
 print(oblasts.columns)
 print(oblasts.crs)
-print(f"Number of administrative regions: {len(oblasts)}")
+print(f"Number of oblast areas: {len(oblasts)}")
 print(oblasts['shapeName'].tolist())
 
 # Reproject oblast boundaries
