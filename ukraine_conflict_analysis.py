@@ -67,7 +67,6 @@ def prepare_event_data(records):
 
     # Convert event dates to datetime values
     events_df["event_date"] = pd.to_datetime(events_df["event_date"])
-    print(events_df["event_date"].dtype)
 
     # Convert coordinate fields to numeric values
     events_df["latitude"] = pd.to_numeric(
@@ -80,7 +79,8 @@ def prepare_event_data(records):
     )
 
     # Check for missing coordinate values
-    print(events_df[["latitude", "longitude"]].isna().sum())
+    if events_df[["latitude", "longitude"]].isna().any().any():
+        raise ValueError("Missing or invalid coordinates found in ACLED event data.")
 
     # Create point geometry from long and lat
     geometry = gpd.points_from_xy(
@@ -194,7 +194,7 @@ token_data = {
 
 # Send the authentication request to ACLED
 token_response = requests.post(token_url, data=token_data, timeout=30)
-
+token_response.raise_for_status()
 print(f"Authentication status: {token_response.status_code}")
 
 # Extract the access token from the authentication response
@@ -225,38 +225,25 @@ response = requests.get(
     params=params,
     timeout=30
 )
+response.raise_for_status()
 print(f"Event request status: {response.status_code}")
 
 # Extract the returned ACLED conflict event records
 api_data = response.json()
 print(f"Total events for study week: {api_data['total_count']}")
 records = api_data["data"]
-print(len(records))
+if not records:
+    raise ValueError("No ACLED events were returned for the selected study period.")
 
 # Prepare ACLED event records for spatial analysis
 analysis_gdf = prepare_event_data(records)
 
-# Check ACLED returns
-
-print(analysis_gdf.crs)
-print(analysis_gdf.shape)
-
 # Load Ukraine Oblast boundaries
 oblasts = load_boundaries('data/boundaries/geoBoundaries-UKR-ADM1-all/geoBoundaries-UKR-ADM1.geojson')
-print(oblasts.head())
-print(oblasts.columns)
-print(oblasts.crs)
 print(f"Number of oblast areas: {len(oblasts)}")
-print(oblasts['shapeName'].tolist())
 
 # Calculate oblast areas
 oblasts_area = calculate_oblast_areas(oblasts)
-
-# Check the projected coordinate reference system
-print(oblasts_area.crs)
-
-# Check oblast area in square kilometres
-print(oblasts_area[["shapeName", "area_km2"]].head())
 
 # Assign ACLED event points to Ukraine oblast polygons
 events_joined = assign_events_to_oblasts(
@@ -264,25 +251,15 @@ events_joined = assign_events_to_oblasts(
     oblasts
 )
 
-# Check join
-print(events_joined.shape)
-print(events_joined[["shapeName"]].head())
-
-# Check for events not assigned to an oblast
-print(events_joined["shapeName"].isna().sum())
+# Check that all events were assigned to an oblast area
+if events_joined["shapeName"].isna().any():
+    raise ValueError("One or more ACLED events could not be assigned to an oblast area.")
 
 # Calculate event counts and density by oblast area
 oblast_summary = calculate_event_density(
     events_joined,
     oblasts_area
 )
-
-# Check merge
-print(oblast_summary.shape)
-print(oblast_summary[["shapeName", "area_km2", "event_count"]].head())
-
-# Check replaced with zero
-print(oblast_summary["event_count"].isna().sum())
 
 # Display oblast areas with the highest event density
 print(
@@ -318,9 +295,6 @@ top_10_events = (
     .head(10)
 )
 
-# Check top 10
-print(top_10_events)
-
 # Plot the ten oblast areas
 top_10_plot = top_10_events.sort_values("event_count")
 fig, ax = plt.subplots(figsize=(10, 6))
@@ -355,9 +329,6 @@ summary_table = summary_table.sort_values(
     ascending=False
 )
 
-# Check table
-print(summary_table.head(10))
-
 # Export oblast area summary table
 summary_table.to_csv(
     "outputs/oblast_area_event_summary_12_18_july_2025.csv",
@@ -366,7 +337,6 @@ summary_table.to_csv(
 
 # Count conflict events by event type
 event_type_counts = analysis_gdf["event_type"].value_counts()
-print(event_type_counts)
 
 # Plot conflict events by event type
 event_type_plot = event_type_counts.sort_values()
