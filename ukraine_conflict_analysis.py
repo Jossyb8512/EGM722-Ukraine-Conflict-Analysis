@@ -45,6 +45,63 @@ def calculate_oblast_areas(boundaries):
 
     return oblasts_area
 
+def prepare_event_data(records):
+    """
+    Prepare ACLED event records for spatial analysis.
+
+    Parameters
+    ----------
+    records : list
+        ACLED event records returned by the API.
+
+    Returns
+    -------
+    GeoDataFrame
+        Prepared conflict event data with point geometry.
+    """
+
+    events_df = pd.DataFrame(records)
+
+    events_df["event_date"] = pd.to_datetime(events_df["event_date"])
+    print(events_df["event_date"].dtype)
+
+    events_df["latitude"] = pd.to_numeric(
+        events_df["latitude"],
+        errors="coerce"
+    )
+    events_df["longitude"] = pd.to_numeric(
+        events_df["longitude"],
+        errors="coerce"
+    )
+
+    print(events_df[["latitude", "longitude"]].isna().sum())
+
+    geometry = gpd.points_from_xy(
+        events_df["longitude"],
+        events_df["latitude"]
+    )
+
+    events_gdf = gpd.GeoDataFrame(
+        events_df,
+        geometry=geometry,
+        crs="EPSG:4326"
+    )
+
+    analysis_gdf = events_gdf[[
+        "event_id_cnty",
+        "event_date",
+        "event_type",
+        "sub_event_type",
+        "admin1",
+        "location",
+        "latitude",
+        "longitude",
+        "fatalities",
+        "geometry"
+    ]].copy()
+
+    return analysis_gdf
+
 # Request ACLED credentials at runtime
 acled_email = input("ACLED email: ")
 acled_password = getpass("ACLED password: ")
@@ -102,65 +159,10 @@ print(f"Total events for study week: {api_data['total_count']}")
 records = api_data["data"]
 print(len(records))
 
-# Convert the ACLED event records into a Pandas DataFrame
-events_df = pd.DataFrame(records)
+analysis_gdf = prepare_event_data(records)
 
-# Inspect the available ACLED event attributes
-print(events_df.columns)
+# Check ACLED returns
 
-# Inspect key attributes required for the spatial analysis
-print(events_df[["event_date", "event_type", "sub_event_type", "admin1", "latitude", "longitude"]].head())
-
-# Check data types before spatial processing
-print(events_df[["event_date", "latitude", "longitude"]].dtypes)
-
-# Convert event dates to a datetime data type
-events_df["event_date"] = pd.to_datetime(events_df["event_date"])
-print(events_df["event_date"].dtype)
-
-# Convert coordinates to numeric values
-events_df["latitude"] = pd.to_numeric(
-    events_df["latitude"],
-    errors="coerce"
-)
-events_df["longitude"] = pd.to_numeric(
-    events_df["longitude"],
-    errors="coerce"
-)
-print(events_df[["latitude", "longitude"]].dtypes)
-
-# Check for missing coordinate values
-print(events_df[["latitude", "longitude"]].isna().sum())
-
-# Convert ACLED coordinates into spatial point features
-geometry = gpd.points_from_xy(
-    events_df["longitude"],
-    events_df["latitude"]
-)
-
-events_gdf = gpd.GeoDataFrame(
-    events_df,
-    geometry=geometry,
-    crs="EPSG:4326"
-)
-
-# Check the event GeoDataFrame
-print(events_gdf.crs)
-print(events_gdf[["longitude", "latitude", "geometry"]].head())
-
-# Select ACLED attributes required for the analysis
-analysis_gdf = events_gdf[[
-    "event_id_cnty",
-    "event_date",
-    "event_type",
-    "sub_event_type",
-    "admin1",
-    "location",
-    "latitude",
-    "longitude",
-    "fatalities",
-    "geometry"
-]].copy()
 print(analysis_gdf.crs)
 print(analysis_gdf.shape)
 
