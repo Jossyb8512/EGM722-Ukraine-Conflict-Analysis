@@ -24,6 +24,27 @@ def load_boundaries(file_path):
 
     return data
 
+def calculate_oblast_areas(boundaries):
+    """
+    Calculate the area of each oblast in square kilometres.
+
+    Parameters
+    ----------
+    boundaries : GeoDataFrame
+        Oblast boundary data.
+
+    Returns
+    -------
+    GeoDataFrame
+        Oblast boundary data containing area values.
+    """
+
+    oblasts_area = boundaries.to_crs(epsg=10596)
+
+    oblasts_area["area_km2"] = oblasts_area.geometry.area / 1_000_000
+
+    return oblasts_area
+
 # Request ACLED credentials at runtime
 acled_email = input("ACLED email: ")
 acled_password = getpass("ACLED password: ")
@@ -151,14 +172,11 @@ print(oblasts.crs)
 print(f"Number of oblast areas: {len(oblasts)}")
 print(oblasts['shapeName'].tolist())
 
-# Reproject oblast boundaries
-oblasts_area = oblasts.to_crs(epsg=10596)
+# Calculate oblast areas
+oblasts_area = calculate_oblast_areas(oblasts)
 
 # Check the projected coordinate reference system
 print(oblasts_area.crs)
-
-# Calculate oblast area in square kilometres
-oblasts_area["area_km2"] = oblasts_area.geometry.area / 1_000_000
 
 # Check oblast area in square kilometres
 print(oblasts_area[["shapeName", "area_km2"]].head())
