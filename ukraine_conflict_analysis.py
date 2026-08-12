@@ -281,27 +281,17 @@ oblast_summary = calculate_event_density(
 print(oblast_summary.shape)
 print(oblast_summary[["shapeName", "area_km2", "event_count"]].head())
 
-# Check for no events
-print(oblast_summary["event_count"].isna().sum())
-
-# Replace missing event counts with zero
-oblast_summary["event_count"] = oblast_summary["event_count"].fillna(0).astype(int)
-
 # Check replaced with zero
 print(oblast_summary["event_count"].isna().sum())
 
-# Calculate reported events per 1,000 square kilometres
-oblast_summary["events_per_1000km2"] = (
-    oblast_summary["event_count"] / oblast_summary["area_km2"]
-) * 1000
-
+# Display oblast areas with the highest event density
 print(
     oblast_summary[
         ["shapeName", "event_count", "area_km2", "events_per_1000km2"]
     ].sort_values("events_per_1000km2", ascending=False).head()
 )
 
-# Map reported event density
+# Map event density
 ax = oblast_summary.plot(
     column="events_per_1000km2",
     cmap="RdYlGn_r",
@@ -311,17 +301,14 @@ ax = oblast_summary.plot(
     figsize=(10, 8),
     legend_kwds={"label": "Events per 1,000 km²"}
 )
-
 ax.set_title("Conflict Event Density in Ukraine, 12–18 July 2025")
 ax.set_axis_off()
-
+plt.tight_layout()
 plt.savefig(
     "outputs/ukraine_event_density_12_18_july_2025.png",
     dpi=300,
     bbox_inches="tight"
 )
-
-plt.tight_layout()
 plt.show()
 
 # Identify the ten oblast areas with the highest event counts
@@ -336,20 +323,16 @@ print(top_10_events)
 
 # Plot the ten oblast areas
 top_10_plot = top_10_events.sort_values("event_count")
-
 fig, ax = plt.subplots(figsize=(10, 6))
-
 ax.barh(
     top_10_plot["shapeName"],
     top_10_plot["event_count"]
 )
 for i, value in enumerate(top_10_plot["event_count"]):
     ax.text(value + 5, i, str(value), va="center")
-
 ax.set_title("Top 10 Oblast Areas by Conflict Events, 12–18 July 2025")
 ax.set_xlabel("Event count")
 ax.set_ylabel("Oblast area")
-
 plt.tight_layout()
 plt.savefig(
     "outputs/top_10_oblast_event_counts_12_18_july_2025.png",
@@ -371,6 +354,7 @@ summary_table = summary_table.sort_values(
     "event_count",
     ascending=False
 )
+
 # Check table
 print(summary_table.head(10))
 
@@ -387,19 +371,15 @@ print(event_type_counts)
 # Plot conflict events by event type
 event_type_plot = event_type_counts.sort_values()
 fig, ax = plt.subplots(figsize=(9, 5))
-
 ax.barh(
     event_type_plot.index,
     event_type_plot.values
 )
-
 ax.set_title("Conflict Events by Event Type, 12–18 July 2025")
 ax.set_xlabel("Event count")
 ax.set_ylabel("Event type")
-
 for i, value in enumerate(event_type_plot.values):
     ax.text(value + 10, i, str(value), va="center")
-
 ax.set_xlim(0, event_type_plot.max() * 1.1)
 plt.tight_layout()
 plt.savefig(
@@ -409,7 +389,4 @@ plt.savefig(
 )
 plt.show()
 
-# Plot ACLED event points over Ukraine administrative boundaries
-# ax = oblasts.plot(facecolor="none", edgecolor="black")
-# events_gdf.plot(ax=ax, color="red", markersize=30)
-# plt.show()
+
