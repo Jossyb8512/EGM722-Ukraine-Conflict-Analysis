@@ -39,8 +39,10 @@ def calculate_oblast_areas(boundaries):
         Oblast boundary data containing area values.
     """
 
+    # Reproject boundaries for area calculation
     oblasts_area = boundaries.to_crs(epsg=10596)
 
+    # Calculate area in square kilometres
     oblasts_area["area_km2"] = oblasts_area.geometry.area / 1_000_000
 
     return oblasts_area
@@ -60,11 +62,14 @@ def prepare_event_data(records):
         Prepared conflict event data with point geometry.
     """
 
+    # Convert ACLED records to a Pandas DataFrame
     events_df = pd.DataFrame(records)
 
+    # Convert event dates to datetime values
     events_df["event_date"] = pd.to_datetime(events_df["event_date"])
     print(events_df["event_date"].dtype)
 
+    # Convert coordinate fields to numeric values
     events_df["latitude"] = pd.to_numeric(
         events_df["latitude"],
         errors="coerce"
@@ -74,19 +79,23 @@ def prepare_event_data(records):
         errors="coerce"
     )
 
+    # Check for missing coordinate values
     print(events_df[["latitude", "longitude"]].isna().sum())
 
+    # Create point geometry from long and lat
     geometry = gpd.points_from_xy(
         events_df["longitude"],
         events_df["latitude"]
     )
 
+    # Create a spatial GeoDataFrame using WGS 84
     events_gdf = gpd.GeoDataFrame(
         events_df,
         geometry=geometry,
         crs="EPSG:4326"
     )
 
+    # Select attributes required for the analysis
     analysis_gdf = events_gdf[[
         "event_id_cnty",
         "event_date",
@@ -101,6 +110,33 @@ def prepare_event_data(records):
     ]].copy()
 
     return analysis_gdf
+
+def assign_events_to_oblasts(events, boundaries):
+    """
+    Assign conflict event points to oblast areas.
+
+    Parameters
+    ----------
+    events : GeoDataFrame
+        Conflict event point data.
+    boundaries : GeoDataFrame
+        Oblast boundary data.
+
+    Returns
+    -------
+    GeoDataFrame
+        Conflict events containing the assigned oblast area.
+    """
+
+    # Assign event points to oblast areas
+    events_joined = gpd.sjoin(
+        events,
+        boundaries[["shapeName", "geometry"]],
+        how="left",
+        predicate="within"
+    )
+
+    return events_joined
 
 # Request ACLED credentials at runtime
 acled_email = input("ACLED email: ")
@@ -184,11 +220,9 @@ print(oblasts_area.crs)
 print(oblasts_area[["shapeName", "area_km2"]].head())
 
 # Assign ACLED event points to Ukraine oblast polygons
-events_joined = gpd.sjoin(
+events_joined = assign_events_to_oblasts(
     analysis_gdf,
-    oblasts[["shapeName", "geometry"]],
-    how="left",
-    predicate="within"
+    oblasts
 )
 
 # Check join
