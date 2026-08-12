@@ -5,6 +5,12 @@ import requests
 from getpass import getpass
 import matplotlib.pyplot as plt
 
+# Study period
+Study_start = "2025-07-12"
+Study_end = "2025-07-18"
+Study_label = "12-18 July 2025"
+Study_file_label = "12_18_july_2025"
+
 def load_boundaries(file_path):
     """
     Load the oblast boundaries dataset.
@@ -212,7 +218,7 @@ acled_url = "https://acleddata.com/api/acled/read"
 # Define filters for the Ukraine conflict event request
 params = {
     "country": "Ukraine",
-    "event_date": "2025-07-12|2025-07-18",
+    "event_date": f"{Study_start}|{Study_end}",
     "event_date_where": "BETWEEN",
     "limit": 5000,
     "with_total": "true"
@@ -278,11 +284,11 @@ ax = oblast_summary.plot(
     figsize=(10, 8),
     legend_kwds={"label": "Events per 1,000 km²"}
 )
-ax.set_title("Conflict Event Density in Ukraine, 12–18 July 2025")
+ax.set_title(f"Conflict Event Density in Ukraine, {Study_label}")
 ax.set_axis_off()
 plt.tight_layout()
 plt.savefig(
-    "outputs/ukraine_event_density_12_18_july_2025.png",
+    f"outputs/ukraine_event_density_{Study_file_label}.png",
     dpi=300,
     bbox_inches="tight"
 )
@@ -304,12 +310,12 @@ ax.barh(
 )
 for i, value in enumerate(top_10_plot["event_count"]):
     ax.text(value + 5, i, str(value), va="center")
-ax.set_title("Top 10 Oblast Areas by Conflict Events, 12–18 July 2025")
+ax.set_title(f"Top 10 Oblast Areas by Conflict Events, {Study_label}")
 ax.set_xlabel("Event count")
 ax.set_ylabel("Oblast area")
 plt.tight_layout()
 plt.savefig(
-    "outputs/top_10_oblast_event_counts_12_18_july_2025.png",
+    f"outputs/top_10_oblast_event_counts_{Study_file_label}.png",
     dpi=300,
     bbox_inches="tight"
 )
@@ -331,7 +337,7 @@ summary_table = summary_table.sort_values(
 
 # Export oblast area summary table
 summary_table.to_csv(
-    "outputs/oblast_area_event_summary_12_18_july_2025.csv",
+    f"outputs/oblast_area_event_summary_{Study_file_label}.csv",
     index=False
 )
 
@@ -345,7 +351,7 @@ ax.barh(
     event_type_plot.index,
     event_type_plot.values
 )
-ax.set_title("Conflict Events by Event Type, 12–18 July 2025")
+ax.set_title(f"Conflict Events by Event Type, {Study_label}")
 ax.set_xlabel("Event count")
 ax.set_ylabel("Event type")
 for i, value in enumerate(event_type_plot.values):
@@ -353,7 +359,7 @@ for i, value in enumerate(event_type_plot.values):
 ax.set_xlim(0, event_type_plot.max() * 1.1)
 plt.tight_layout()
 plt.savefig(
-    "outputs/event_types_12_18_july_2025.png",
+    f"outputs/event_types_{Study_file_label}.png",
     dpi=300,
     bbox_inches="tight"
 )
