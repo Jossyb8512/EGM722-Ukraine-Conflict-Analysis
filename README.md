@@ -18,7 +18,11 @@ credentials at runtime, and these credentials are not stored within the reposito
 geoBoundaries provides the ADM1 boundary dataset which represents the first level administrative areas (Oblast areas).
 This is available in several formats, however, a GeoJSON is used and stored locally in the data/boundaries folder. 
 ## Requirements and Environment
-
+The project was developed in a Conda environment called `ukraine-analysis` using Python 3.11. The repository contains an
+`environment.yml` file so that the required environment and packages can be recreated. The `environment.yml` contains the full
+dependency list. 
+An ACLED account with API access is required because the script asks for credentials when it runs. 
+The user will also need Anaconda or Miniconda to create the supplied environment. 
 ## Installation
 
 ## Running the Analysis
