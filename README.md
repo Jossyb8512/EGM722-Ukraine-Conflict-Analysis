@@ -1,12 +1,12 @@
-# EGM722- Ukraine Conflict Analysis
+# EGM722 Ukraine Conflict Analysis
 EGM722 Programming for GIS and Remote Sensing assessment project
 
 ## Project Overview
 
 This is the EGM722 Programming for GIS and Remote Sensing assessment project. This project uses Python to automate
 the retrieval, processing, spatial analysis and visualisation of conflict event data in Ukraine. 
-Armed Conflict and Events Data (ACLED) supplies the event data and an Ukraine boundary dataset provides the Ukrainian
-Oblasts for the spatial areas. The analysis calculates conflict event counts and event density by Oblast area then
+Armed Conflict Location & Event Data (ACLED) supplies the event data and a Ukraine boundary dataset provides the Ukrainian
+Oblasts for the spatial areas. The analysis calculates conflict event counts and event density by Oblast area, then
 produces maps, charts and CSV files.  
 
 ## Study Period
@@ -24,7 +24,7 @@ credentials at runtime, and these credentials are not stored within the reposito
 ### Ukraine Oblast Boundaries
 
 geoBoundaries provides the ADM1 boundary dataset which represents the first level administrative areas (Oblast areas).
-This is available in several formats, however, a GeoJSON is used and stored locally in the data/boundaries folder.
+This is available in several formats, however, a GeoJSON is used and stored locally in the `data/boundaries` folder.
 
 ## Requirements and Environment
 
@@ -50,7 +50,7 @@ Follow these two steps to run the script:
 
 1) Run the script from the repository root using `python ukraine_conflict_analysis.py` 
 (ensuring the `ukraine-analysis` environment is activated).
-2) When prompted enter ACLED email and password.
+2) When prompted, enter ACLED email and password.
 
 The script will then retrieve the Ukraine event data for the defined study period, perform the spatial analysis,
 and create the outputs automatically.
