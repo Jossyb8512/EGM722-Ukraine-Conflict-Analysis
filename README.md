@@ -46,6 +46,16 @@ Follow these five steps for installation:
 
 ## Running the Analysis
 
+Follow these two steps to run the script: 
+
+1) Run the script from the repository root using `python ukraine_conflict_analysis.py` 
+(ensuring the `ukraine-analysis` environment is activated).
+2) When prompted enter ACLED email and password.
+
+The script will then retrieve the Ukraine event data for the defined study period, perform the spatial analysis,
+and create the outputs automatically.
+The script will also print useful status information such as the authentication status, event request status,
+total number of events, number of Oblast areas, and the areas with the highest event density.
 ## Outputs
 
 ## Repository Structure
