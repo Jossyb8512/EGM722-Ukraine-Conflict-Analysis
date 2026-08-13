@@ -56,7 +56,28 @@ The script will then retrieve the Ukraine event data for the defined study perio
 and create the outputs automatically.
 The script will also print useful status information such as the authentication status, event request status,
 total number of events, number of Oblast areas, and the areas with the highest event density.
+
 ## Outputs
+
+The script outputs four products:
+
+1. A map, in PNG file format, showing conflict event density by Oblast for Ukraine.
+2. A chart, in PNG file format, showing the Top 10 Oblast areas by conflict event count.
+3. A chart, in PNG file format, showing conflict events by event type.
+4. A summary, in CSV file format, containing:
+   1. Oblast name.
+   2. Event count.
+   3. Area in km².
+   4. Events per 1,000 km².
+
+The exact filenames produced are:
+
+1. `ukraine_event_density_12_18_july_2025.png`
+2. `top_10_oblast_event_counts_12_18_july_2025.png`
+3. `event_types_12_18_july_2025.png`
+4. `oblast_area_event_summary_12_18_july_2025.csv`
+
+The filenames include the study period label, which is derived from constants at the top of the script.  
 
 ## Repository Structure
 
