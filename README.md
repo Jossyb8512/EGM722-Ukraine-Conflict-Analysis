@@ -112,3 +112,5 @@ EGM722-Ukraine-Conflict-Analysis/
  retrieve from the API. geoBoundaries is freely available to download.
 
 ## License
+
+This project is released under the MIT License. The full licence terms are available in the `LICENSE` file.
