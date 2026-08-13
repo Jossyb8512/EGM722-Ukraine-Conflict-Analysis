@@ -6,10 +6,11 @@ from getpass import getpass
 import matplotlib.pyplot as plt
 
 # Study period
-Study_start = "2025-07-12"
-Study_end = "2025-07-18"
-Study_label = "12-18 July 2025"
-Study_file_label = "12_18_july_2025"
+STUDY_START = "2025-07-12"
+STUDY_END = "2025-07-18"
+STUDY_LABEL = "12-18 July 2025"
+STUDY_FILE_LABEL = "12_18_july_2025"
+
 
 def load_boundaries(file_path):
     """
@@ -29,6 +30,7 @@ def load_boundaries(file_path):
     data = gpd.read_file(file_path)
 
     return data
+
 
 def calculate_oblast_areas(boundaries):
     """
@@ -52,6 +54,7 @@ def calculate_oblast_areas(boundaries):
     oblasts_area["area_km2"] = oblasts_area.geometry.area / 1_000_000
 
     return oblasts_area
+
 
 def prepare_event_data(records):
     """
@@ -117,6 +120,7 @@ def prepare_event_data(records):
 
     return analysis_gdf
 
+
 def assign_events_to_oblasts(events, boundaries):
     """
     Assign conflict event points to oblast areas.
@@ -143,6 +147,7 @@ def assign_events_to_oblasts(events, boundaries):
     )
 
     return events_joined
+
 
 def calculate_event_density(events_joined, oblast_areas):
     """
@@ -175,12 +180,19 @@ def calculate_event_density(events_joined, oblast_areas):
     )
 
     # Replace missing event counts with zero
-    oblast_summary["event_count"] = oblast_summary["event_count"].fillna(0).astype(int)
+    oblast_summary["event_count"] = (
+        oblast_summary["event_count"]
+        .fillna(0)
+        .astype(int)
+    )
 
     # Calculate events per 1,000 square kilometres
-    oblast_summary["events_per_1000km2"] = (oblast_summary["event_count"] / oblast_summary["area_km2"]) * 1000
+    oblast_summary["events_per_1000km2"] = (
+        oblast_summary["event_count"] / oblast_summary["area_km2"]
+    ) * 1000
 
     return oblast_summary
+
 
 # Request ACLED credentials at runtime
 acled_email = input("ACLED email: ")
@@ -218,7 +230,7 @@ acled_url = "https://acleddata.com/api/acled/read"
 # Define filters for the Ukraine conflict event request
 params = {
     "country": "Ukraine",
-    "event_date": f"{Study_start}|{Study_end}",
+    "event_date": f"{STUDY_START}|{STUDY_END}",
     "event_date_where": "BETWEEN",
     "limit": 5000,
     "with_total": "true"
@@ -245,7 +257,10 @@ if not event_records:
 prepared_events = prepare_event_data(event_records)
 
 # Load Ukraine Oblast boundaries
-oblasts = load_boundaries('data/boundaries/geoBoundaries-UKR-ADM1-all/geoBoundaries-UKR-ADM1.geojson')
+oblasts = load_boundaries(
+    "data/boundaries/geoBoundaries-UKR-ADM1-all/"
+    "geoBoundaries-UKR-ADM1.geojson"
+)
 print(f"Number of oblast areas: {len(oblasts)}")
 
 # Calculate oblast areas
@@ -284,11 +299,11 @@ ax = density_summary.plot(
     figsize=(10, 8),
     legend_kwds={"label": "Events per 1,000 km²"}
 )
-ax.set_title(f"Conflict Event Density in Ukraine, {Study_label}")
+ax.set_title(f"Conflict Event Density in Ukraine, {STUDY_LABEL}")
 ax.set_axis_off()
 plt.tight_layout()
 plt.savefig(
-    f"outputs/ukraine_event_density_{Study_file_label}.png",
+    f"outputs/ukraine_event_density_{STUDY_FILE_LABEL}.png",
     dpi=300,
     bbox_inches="tight"
 )
@@ -310,12 +325,12 @@ ax.barh(
 )
 for i, value in enumerate(top_10_plot["event_count"]):
     ax.text(value + 5, i, str(value), va="center")
-ax.set_title(f"Top 10 Oblast Areas by Conflict Events, {Study_label}")
+ax.set_title(f"Top 10 Oblast Areas by Conflict Events, {STUDY_LABEL}")
 ax.set_xlabel("Event count")
 ax.set_ylabel("Oblast area")
 plt.tight_layout()
 plt.savefig(
-    f"outputs/top_10_oblast_event_counts_{Study_file_label}.png",
+    f"outputs/top_10_oblast_event_counts_{STUDY_FILE_LABEL}.png",
     dpi=300,
     bbox_inches="tight"
 )
@@ -337,7 +352,7 @@ summary_table = summary_table.sort_values(
 
 # Export oblast area summary table
 summary_table.to_csv(
-    f"outputs/oblast_area_event_summary_{Study_file_label}.csv",
+    f"outputs/oblast_area_event_summary_{STUDY_FILE_LABEL}.csv",
     index=False
 )
 
@@ -351,7 +366,7 @@ ax.barh(
     event_type_plot.index,
     event_type_plot.values
 )
-ax.set_title(f"Conflict Events by Event Type, {Study_label}")
+ax.set_title(f"Conflict Events by Event Type, {STUDY_LABEL}")
 ax.set_xlabel("Event count")
 ax.set_ylabel("Event type")
 for i, value in enumerate(event_type_plot.values):
@@ -359,7 +374,7 @@ for i, value in enumerate(event_type_plot.values):
 ax.set_xlim(0, event_type_plot.max() * 1.1)
 plt.tight_layout()
 plt.savefig(
-    f"outputs/event_types_{Study_file_label}.png",
+    f"outputs/event_types_{STUDY_FILE_LABEL}.png",
     dpi=300,
     bbox_inches="tight"
 )
