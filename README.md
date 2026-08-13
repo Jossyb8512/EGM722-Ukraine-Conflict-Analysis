@@ -81,6 +81,28 @@ The filenames include the study period label, which is derived from constants at
 
 ## Repository Structure
 
+```text
+EGM722-Ukraine-Conflict-Analysis/
+├── data/
+│   └── boundaries/
+├── docs/
+├── outputs/
+├── .gitattributes
+├── .gitignore
+├── environment.yml
+├── LICENSE
+├── README.md
+└── ukraine_conflict_analysis.py
+```
+
+`data/boundaries/` contains the input boundary data.
+`docs/` contains the project documentation.
+`outputs/` stores the generated maps, charts and CSV files.
+`environment.yml` defines the Conda environment.
+`LICENSE` contains the repository licence.
+`README.md` contains the installation and usage information.
+`ukraine_conflict_analysis.py` is the main analysis script.
+
 ## Data Access and Credentials
 
 ## License
