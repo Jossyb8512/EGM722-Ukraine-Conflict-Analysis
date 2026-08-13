@@ -105,4 +105,10 @@ EGM722-Ukraine-Conflict-Analysis/
 
 ## Data Access and Credentials
 
+ An ACLED account with API access is required, and the script asks for the user's ACLED email and password when it runs.
+ `getpass` is used for the password so it is not displayed while typing. For security, credentials are not hard coded
+ into the script or stored in the repository. ACLED account permissions affect which event dates are available from the
+ API. For the ACLED account used in this project, only historical events with a 12-month delay are available to
+ retrieve from the API. geoBoundaries is freely available to download.
+
 ## License
