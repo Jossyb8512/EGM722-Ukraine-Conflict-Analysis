@@ -11,7 +11,12 @@ produces maps, charts and CSV files.
 The analysis covers 12 - 18 July 2025 and is a seven-day historical study period. The same study period is used throughout
 the project, including the ACLED request and generated analytical outputs. 
 ## Data Sources
-
+### ACLED Conflict Event Data
+ACLED event data is retrieved through the ACLED API for Ukraine and filtered to the study period. The script requires user
+credentials at runtime, and these credentials are not stored within the repository.
+### Ukraine Oblast Boundaries
+geoBoundaries provides the ADM1 boundary dataset which represents the first level administrative areas (Oblast areas).
+This is available in several formats, however, a GeoJSON is used and stored locally in the data/boundaries folder. 
 ## Requirements and Environment
 
 ## Installation
